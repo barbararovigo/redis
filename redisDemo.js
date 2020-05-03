@@ -68,15 +68,10 @@ function geraRanges(){
 
 function geraScores(){
     // Gera hash nome do usuário
-    try {
-        let setSize = 50;
-        while(setSize > 0){
-            client.sadd(bscore+('0' + setSize).slice(-2), 0);
-        setSize -= 1;
-        }
-    }
-    catch (error) {
-        console.error(error);
+    for(var i = 1; i <= 50;i++){
+        let num = ('0' + i).slice(-2);
+        client.sadd(bscore+num, 0);
+        //client.del(bscore+num);
     }
 }
 
@@ -91,60 +86,6 @@ function geraCartelas(){
     }
 }
 
-//sorteio
-
-function sorteio(){
-    client.spop('pedras',function(err, valor){
-        //console.log('(sorteio) Pedra: '+ valor); //58
-        return valor;
-    })  
-     
-}
-
-function pesquisaCartelaSorteada(pedra = sorteio()){
-    for(var i = 1; i <= 50;i++){
-        let cont = i;
-        client.sismember(bcartela+('0'+cont).slice(-2),pedra,function(err, possuiPedra){
-            if(possuiPedra){
-              console.log('(pesquisaCartelaSorteada) Cartela: '+bcartela+('0'+cont).slice(-2)+' possui Pedra: '+possuiPedra);
-              return bcartela+('0'+cont).slice(-2);
-            }
-        })
-
-    }
-
-}
-
-function pesquisaCartelaJogador(cartelaSorteada = pesquisaCartelaSorteada){
-    for(var i = 1; i<= 50;i++){
-        let num = ('0'+i).slice(-2);
-        client.hmget(key+num, 'bcartela', function(err, cartelaJogador){ //Procura nas 50 pessoas a cartela sorteada
-            if(cartelaJogador == cartelaSorteada){
-               console.log('(pesquisaCartelaJogador) Pontuar jogador: '+ key+num); 
-               return key+num; //retorna chave do jogador com cartela sorteada
-            }  
-        })
-
-    }
-}
-
-function pontuarJogador(jogador){    
-    client.hmget(jogador, 'bscore', function(err, score){ //retorna score do jogador sorteado 
-        client.incrby(score, 1);  
-    })
-}
-
-function verificaGanhador(){
-    for(var i = 1; i<= 50;i++){
-        let num = ('0'+i).slice(-2);
-        client.get(bscore+num, function(err,valor){
-            if(valor == 15){
-                return true;
-            }
-        })
-    }
-
-}
                     
 geraJogador();
 geraRanges();
@@ -152,41 +93,41 @@ geraScores();
 geraCartelas(); 
 
 
-    
-let pedra2 = sorteio();
-console.log(sorteio());
 let ganhador = false;
 
 while(!ganhador){
-    
-    let pedra = sorteio();
-    console.log('Passou aqui'+pedra);
-    //Pesquisa Cartelas Sorteadas
-    for(var i = 1; i <= 50;i++){
-        let cont = ('0'+ i).slice(-2);
-        console.log(pedra);
-        client.sismember(bcartela+cont,pedra,function(err, possuiPedra){
-            
-            if(possuiPedra){
-             // console.log('(pesquisaCartelaSorteada) Cartela: '+bcartela+cont+' possui Pedra: '+possuiPedra);
-              //pontuarJogador(pesquisaCartelaJogador(bcartela+cont));
-            }
-        })
-    }
-    break;
 
-    
+    client.spop('pedras',function(err, pedra){
+        //Pesquisa Cartelas Sorteadas
+        for(var i = 1; i <= 50;i++){
+            let cont = ('0'+ i).slice(-2);
+            client.sismember(bcartela+cont,pedra,function(err, possuiPedra){                
+                if(possuiPedra){
+                 console.log('(pesquisaCartelaSorteada) Cartela: '+bcartela+cont+' possui Pedra: '+possuiPedra);
+                 let cartelaSorteada = bcartela+cont;
+                 for(var i2 = 1; i2<= 50;i2++){
+                    let num = ('0'+i2).slice(-2);
+                    client.hmget(key+num, 'bcartela', function(err, cartelaJogador){ //Procura nas 50 pessoas a cartela sorteada
+                        if(cartelaJogador == cartelaSorteada){
+                           console.log('Pontuar jogador: '+ key+num);
+                           
+                           client.hmget(key+num, 'bscore', function(err,score){ //retorna score do jogador sorteado 
+                               console.log(score); 
+                               //client.incr(score);
+                           })
+                           
+                        }  
+                    })            
+                  }
+
+                }
+            })
+        }
+    })
+break;
 }
 
 
-/*while(!ganhador){
 
-    let pontos = pesquisaCartelaJogador(cartela = pesquisaCartelaSorteada(pedra = sorteio()));
-    if(pontos == 15){
-        ganhador;
-    }
-
-}  */            
-        
 
     
