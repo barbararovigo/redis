@@ -18,6 +18,6 @@ Função que gera os sets para armazenar e calcular os escores/pontuação dos j
 
 ![Código Scores](https://github.com/barbararovigo/redis/blob/master/tela%20gera%20cartelas.JPG)
 
-Pedras sorteadas, cartelas e jogadores sorteados  
+Pedra sorteada, cartelas e jogadores sorteados  
 
 ![Pedras e cartelas sorteadas](https://github.com/barbararovigo/redis/blob/master/sorteados.JPG)
