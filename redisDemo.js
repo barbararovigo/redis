@@ -68,10 +68,15 @@ function geraRanges(){
 
 function geraScores(){
     // Gera hash nome do usuário
-    for(var i = 1; i <= 50;i++){
-        let num = ('0' + i).slice(-2);
-        client.sadd(bscore+num, 0);
-        //client.del(bscore+num);
+    try {
+        let setSize = 50;
+        while(setSize > 0){
+            client.hset(bscore+ ('0'+ setSize).slice(-2), 'bscore', 0);
+        setSize -= 1;
+        }
+    }
+    catch (error) {
+        console.error(error);
     }
 }
 
@@ -93,27 +98,33 @@ geraScores();
 geraCartelas(); 
 
 
-let ganhador = false;
-
-while(!ganhador){
-
-    client.spop('pedras',function(err, pedra){
+var flag = 1;
+for(var flag = 1; flag <= 99;flag++){
+//while(ganhador == 0 ){
+    client.spop('pedras',function(err, pedra){ //Sorteia uma pedra
         //Pesquisa Cartelas Sorteadas
-        for(var i = 1; i <= 50;i++){
+        for(var i = 1; i <= 50;i++){ //Percorre as 50 cartelas   
             let cont = ('0'+ i).slice(-2);
-            client.sismember(bcartela+cont,pedra,function(err, possuiPedra){                
-                if(possuiPedra){
-                 console.log('(pesquisaCartelaSorteada) Cartela: '+bcartela+cont+' possui Pedra: '+possuiPedra);
-                 let cartelaSorteada = bcartela+cont;
-                 for(var i2 = 1; i2<= 50;i2++){
+            client.sismember(bcartela+cont,pedra,function(err, possuiPedra){  //verifica se a cartela possui a pedra    
+                if(possuiPedra){  // Se a cartela possui a pedra
+                  let cartelaSorteada = bcartela+cont;
+                 for(var i2 = 1; i2<= 50;i2++){ //procura das 50 pessoas a cartela
                     let num = ('0'+i2).slice(-2);
                     client.hmget(key+num, 'bcartela', function(err, cartelaJogador){ //Procura nas 50 pessoas a cartela sorteada
-                        if(cartelaJogador == cartelaSorteada){
-                           console.log('Pontuar jogador: '+ key+num);
-                           
-                           client.hmget(key+num, 'bscore', function(err,score){ //retorna score do jogador sorteado 
-                               console.log(score); 
-                               //client.incr(score);
+                        if(cartelaJogador == cartelaSorteada){ // Se encontrou a pessoa com a cartela 
+                            client.hmget(key+num, 'bscore', function(err,score){ //retorna score do jogador sorteado 
+                               client.hincrby(score+'', 'bscore', 1, function(err, ret){ //incrementa a pontuação da pessoa
+                                    if(err) 
+                                        throw err;
+                                    else { 
+                                        console.log('Pontuação do jogador na rodada '+flag+ ' é ' +key+num+' até agora é: '+ret);
+                                        if (ret==15){
+                                          console.log('Jogador: '+key+num+' venceu a partida com 15 pontos!');   
+                                           flag = 100;
+                                        }
+                                    };
+
+                               });
                            })
                            
                         }  
@@ -124,8 +135,7 @@ while(!ganhador){
             })
         }
     })
-break;
-}
+};
 
 
 
