@@ -21,3 +21,11 @@ Função que gera os sets para armazenar e calcular os escores/pontuação dos j
 Pedra sorteada, cartelas e jogadores sorteados  
 
 ![Pedras e cartelas sorteadas](https://github.com/barbararovigo/redis/blob/master/sorteados.JPG)
+
+Print da função que incrementa a pontuação do jogador.
+
+![Incremento](https://github.com/barbararovigo/redis/blob/master/incremento.JPG)
+
+Print do vencedor da partida
+![Vencedor](https://github.com/barbararovigo/redis/blob/master/mensagem%20ganhador.JPG)
+
